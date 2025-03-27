@@ -20,7 +20,7 @@
  
  // ------------------------------ Defines ------------------------------
  
- #define NUM_ITEMS       6            	// Número de itens do menu
+ #define NUM_ITEMS       5            	// Número de itens do menu
  #define MAX_ITEM_LENGTH 16           	// Comprimento máximo de cada item (em caracteres)
  #define WINDOW_SIZE     4            	// Quantidade de itens exibidos na tela
  #define DEBOUNCE_DELAY  100	      	// Delay de debounce (em milissegundos)
@@ -131,11 +131,10 @@ extern volatile uint8_t flag_timer_int; 	// Flag do timer TIM4
   */
  static const char menu_items[NUM_ITEMS][MAX_ITEM_LENGTH] = {
      "Banho",
-     "Temperatura",
-     "Volume",
-     "Conexao",
-     "Configuracao",
-     "Calibracao"
+     "Abastecer",
+     "Ajustes",
+     "Manutencao",
+     "Conexão"
  };
 
 // -------------------------- Funções do Menu --------------------------

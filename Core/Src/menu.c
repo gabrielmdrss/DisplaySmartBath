@@ -19,7 +19,7 @@ volatile uint8_t flag_button_enter;     // Flag do botão "enter"
 volatile uint8_t flag_timer_int; 		// Flag do timer TIM4
 
 // Definições das variáveis
-volatile uint8_t current_screen = 0;    // Tela atual do menu
+volatile uint8_t current_screen = 1;    // Tela atual do menu
 volatile uint8_t old_screen = 0;        // Tela anteriormente exibida
 volatile int8_t cursor = 0;             // Posição atual do cursor
 volatile int16_t old_cursor = 0;        // Posição anterior do cursor
@@ -143,7 +143,14 @@ void Menu_UpdateCursor(void) {
 
 void Menu_CheckButtons(void){
 
-	if(flag_button_up)
+	if((flag_button_up || flag_button_down) && flag_pop_up){
+		flag_pop_up = 0;
+		count_pop_up = 0;
+		pop_up_showed = 1;
+		old_screen = !old_screen;
+	}
+
+	if(flag_button_up  && !flag_pop_up)
 	{
 		if(!current_screen){
 			// Por exemplo: atualiza a posição do cursor
@@ -159,7 +166,7 @@ void Menu_CheckButtons(void){
 
         flag_button_up = 0;
 	}
-	else if(flag_button_down)
+	else if(flag_button_down && !flag_pop_up)
 	{
 		if(!current_screen){
 			// Por exemplo: atualiza a posição do cursor
@@ -178,10 +185,8 @@ void Menu_CheckButtons(void){
 	else if(flag_button_enter)
 	{
 		current_screen = !current_screen;
-		count_pop_up = 0;
 		pop_up_showed = 0;
 		HD44780_Clear();
-
         flag_button_enter = 0;
 	}
 }
@@ -221,12 +226,6 @@ void Menu_SpecificScreen(void){
 
 	// Se a opção selecionada for "Banho"
 	} else if(cursor == 0){
-		HD44780_SetCursor(4, 1);
-		HD44780_PrintStr("Banho");
-
-    // Se a opção selecionada for "Temperatura"
-	} else if(cursor == 1){
-
 		uint16_t temp;
 		char buffer_Str[10];
 		temp = (uint16_t)(((adc_Value * 20) / 4095) + 25);
@@ -258,26 +257,26 @@ void Menu_SpecificScreen(void){
 		flag_timer_int = 0;
 		}
 
-    // Se a opção selecionada for "Volume"
+    // Se a opção selecionada for "Abastecer"
+	} else if(cursor == 1){
+
+		HD44780_SetCursor(4, 1);
+		HD44780_PrintStr("Abastecer");
+
+    // Se a opção selecionada for "Ajustes"
 	} else if(cursor == 2){
 		HD44780_SetCursor(0, 0);
-		HD44780_PrintStr("Volume");
+		HD44780_PrintStr("Ajustes");
 
-    // Se a opção selecionada for "Conexão"
+    // Se a opção selecionada for "Manuntenção"
 	} else if(cursor == 3){
 		HD44780_SetCursor(0, 0);
-		HD44780_PrintStr("Conexao");
+		HD44780_PrintStr("Manuntencao");
 
-    // Se a opção selecionada for "Configuração"
+    // Se a opção selecionada for "Conexão"
 	} else if(cursor == 4){
 		HD44780_SetCursor(0, 0);
-		HD44780_PrintStr("Configuracao");
-
-    // Se a opção selecionada for "Calibração"
-	} else if(cursor == 5){
-		HD44780_SetCursor(0, 0);
-		HD44780_PrintStr("Calibracao");
-
+		HD44780_PrintStr("Conexao");
 	}
 
 }
@@ -313,7 +312,7 @@ void Menu_ShowPopup()
     HD44780_SetCursor(0, 3);
     HD44780_PrintStr(line);
     
-    if(count_pop_up < 200){
+    if(count_pop_up < 150){
     	count_pop_up++;
     	HAL_Delay(1);
     	//printf("CONTADOR= %d\n", count_pop_up);
