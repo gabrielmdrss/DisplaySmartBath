@@ -1,8 +1,9 @@
-../Core/Src/menu.c:31:6:Menu_CreateChars	1
-../Core/Src/menu.c:44:6:Menu_Draw	9
-../Core/Src/menu.c:89:6:Menu_UpdateScrollbar	4
-../Core/Src/menu.c:124:6:Menu_UpdateCursor	2
-../Core/Src/menu.c:141:6:Menu_CheckButtons	8
-../Core/Src/menu.c:179:6:Menu_HomeScreen	5
-../Core/Src/menu.c:197:6:Menu_SpecificScreen	8
-../Core/Src/menu.c:240:6:Menu_Interface	2
+../Core/Src/menu.c:34:6:Menu_CreateChars	1
+../Core/Src/menu.c:47:6:Menu_Draw	9
+../Core/Src/menu.c:92:6:Menu_UpdateScrollbar	4
+../Core/Src/menu.c:127:6:Menu_UpdateCursor	2
+../Core/Src/menu.c:144:6:Menu_CheckButtons	10
+../Core/Src/menu.c:193:6:Menu_HomeScreen	5
+../Core/Src/menu.c:211:6:Menu_SpecificScreen	12
+../Core/Src/menu.c:285:6:Menu_ShowPopup	2
+../Core/Src/menu.c:330:6:Menu_Interface	2

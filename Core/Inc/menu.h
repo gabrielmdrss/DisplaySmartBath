@@ -16,14 +16,23 @@
  #define MENU_H
  
  #include "liquidcrystal_i2c.h"     // Biblioteca para manipulação de LCD via I2C.
+ #include <string.h>
  
  // ------------------------------ Defines ------------------------------
  
- #define NUM_ITEMS       6            // Número de itens do menu
- #define MAX_ITEM_LENGTH 16           // Comprimento máximo de cada item (em caracteres)
- #define WINDOW_SIZE     4            // Quantidade de itens exibidos na tela
- #define DEBOUNCE_DELAY  15	          // Delay de debounce (em milissegundos)
+ #define NUM_ITEMS       6            	// Número de itens do menu
+ #define MAX_ITEM_LENGTH 16           	// Comprimento máximo de cada item (em caracteres)
+ #define WINDOW_SIZE     4            	// Quantidade de itens exibidos na tela
+ #define DEBOUNCE_DELAY  100	      	// Delay de debounce (em milissegundos)
+
  
+ extern volatile uint16_t adc_Value;	// Valor cru do adc_Value
+ extern volatile uint16_t setpoint;		// Valor escolhido de temperatura
+ extern volatile uint8_t flag_pop_up;	// Flag de pop-up
+ extern char message_pop_up[64];
+ extern volatile uint32_t count_pop_up;
+ extern volatile uint8_t pop_up_showed;
+
  // ------------------------ Variáveis dos Botões ------------------------
  
  /**
@@ -36,21 +45,20 @@
  extern volatile uint8_t flag_button_enter; // Flag do botão "enter"
  
  /**
+  * @brief Flags do timer.
+  *
+  * Esta flag indica a flag de estouro do timer, que acontece a cada 1s.
+  */
+extern volatile uint8_t flag_timer_int; 	// Flag do timer TIM4
+
+ /**
   * @brief Variáveis de controle dos botões.
   *
-  * Estas variáveis armazenam os estados dos botões e os tempos dos eventos de subida/descida.
+  * Estas variáveis armazenam os tempos dos últimos eventos de subida.
   */
- extern volatile uint8_t btn5_state;        // Estado do botão conectado ao pino 5
- extern volatile uint32_t last_rising5;     // Último tempo de fronte de subida do botão pino 5
- extern volatile uint32_t last_falling5;    // Último tempo de fronte de descida do botão pino 5
- 
- extern volatile uint8_t btn9_state;        // Estado do botão conectado ao pino 9
- extern volatile uint32_t last_rising9;     // Último tempo de fronte de subida do botão pino 9
- extern volatile uint32_t last_falling9;    // Último tempo de fronte de descida do botão pino 9
- 
- extern volatile uint8_t btn8_state;        // Estado do botão conectado ao pino 8
- extern volatile uint32_t last_rising8;     // Último tempo de fronte de subida do botão pino 8
- extern volatile uint32_t last_falling8;    // Último tempo de fronte de descida do botão pino 8
+ extern volatile uint32_t lastPressUp;
+ extern volatile uint32_t lastPressDown;
+ extern volatile uint32_t lastPressEnter;
  
  // --------------------- Variáveis de Controle do Menu ---------------------
  
@@ -193,6 +201,8 @@ void Menu_HomeScreen(void);
  * em seguida, exibe o texto correspondente ao item selecionado em coordenadas predefinidas.
  */
 void Menu_SpecificScreen(void);
+
+void Menu_ShowPopup();
 
 /**
  * @brief Gerencia a lógica geral da interface do menu.

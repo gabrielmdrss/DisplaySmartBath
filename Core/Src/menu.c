@@ -2,9 +2,21 @@
 #include <stdio.h>
 #include "liquidcrystal_i2c.h"
 
+volatile uint16_t adc_Value = 0;		// Valor cru do adc_Value
+volatile uint16_t setpoint = 40;
+
+volatile uint8_t flag_pop_up;
+char message_pop_up[64];
+volatile uint32_t count_pop_up;
+volatile uint8_t pop_up_showed = 0;
+
+
+
 volatile uint8_t flag_button_up;        // Flag do botão "up"
 volatile uint8_t flag_button_down;      // Flag do botão "down"
 volatile uint8_t flag_button_enter;     // Flag do botão "enter"
+
+volatile uint8_t flag_timer_int; 		// Flag do timer TIM4
 
 // Definições das variáveis
 volatile uint8_t current_screen = 0;    // Tela atual do menu
@@ -14,18 +26,9 @@ volatile int16_t old_cursor = 0;        // Posição anterior do cursor
 volatile uint8_t window_start = 0;      // Índice do primeiro item exibido na janela
 volatile uint8_t menu_needs_update = 1; // Flag que indica se o menu precisa ser atualizado
 
-// Variáveis dos botões
-volatile uint8_t btn5_state = 0;        // Estado do botão conectado ao pino 5
-volatile uint32_t last_rising5 = 0;     // Último tempo de fronte de subida do botão pino 5
-volatile uint32_t last_falling5 = 0;    // Último tempo de fronte de descida do botão pino 5
-
-volatile uint8_t btn9_state = 0;        // Estado do botão conectado ao pino 9
-volatile uint32_t last_rising9 = 0;     // Último tempo de fronte de subida do botão pino 9
-volatile uint32_t last_falling9 = 0;    // Último tempo de fronte de descida do botão pino 9
-
-volatile uint8_t btn8_state = 0;        // Estado do botão conectado ao pino 8
-volatile uint32_t last_rising8 = 0;     // Último tempo de fronte de subida do botão pino 8
-volatile uint32_t last_falling8 = 0;    // Último tempo de fronte de descida do botão pino 8
+volatile uint32_t lastPressUp = 0;
+volatile uint32_t lastPressDown = 0;
+volatile uint32_t lastPressEnter = 0;
 
 // Criação dos caracteres – usamos os índices 2,3,5 e 6 (pode manter o 4, se desejar)
 void Menu_CreateChars(void) {
@@ -148,6 +151,10 @@ void Menu_CheckButtons(void){
 			if(cursor < 0)
 				cursor = (NUM_ITEMS - 1);
 
+		} else {
+			setpoint++;
+			if(setpoint > 45)
+				setpoint = 45;
 		}
 
         flag_button_up = 0;
@@ -159,6 +166,11 @@ void Menu_CheckButtons(void){
 			cursor++;
 			if(cursor > (NUM_ITEMS - 1))
 				cursor = 0;
+
+		} else {
+			setpoint--;
+			if(setpoint < 25)
+				setpoint = 25;
 		}
 
         flag_button_down = 0;
@@ -166,6 +178,8 @@ void Menu_CheckButtons(void){
 	else if(flag_button_enter)
 	{
 		current_screen = !current_screen;
+		count_pop_up = 0;
+		pop_up_showed = 0;
 		HD44780_Clear();
 
         flag_button_enter = 0;
@@ -202,38 +216,114 @@ void Menu_SpecificScreen(void){
 		old_screen = current_screen;    // Atualiza a tela anterior
 	}
 
-    // Se a opção selecionada for "Banho"
-	if(cursor == 0){
+	if(flag_pop_up){
+		Menu_ShowPopup();
+
+	// Se a opção selecionada for "Banho"
+	} else if(cursor == 0){
 		HD44780_SetCursor(4, 1);
 		HD44780_PrintStr("Banho");
 
     // Se a opção selecionada for "Temperatura"
 	} else if(cursor == 1){
-		HD44780_SetCursor(5, 1);
-		HD44780_PrintStr("Temperatura");
+
+		uint16_t temp;
+		char buffer_Str[10];
+		temp = (uint16_t)(((adc_Value * 20) / 4095) + 25);
+
+		HD44780_SetCursor(0, 0);
+		HD44780_PrintStr("Temperatura|SetPoint");
+
+		sprintf(buffer_Str, "%d", temp);
+		HD44780_SetCursor(2, 2);
+		HD44780_PrintStr(" ");
+		HD44780_PrintStr(buffer_Str);
+
+		sprintf(buffer_Str, "%d", setpoint);
+		HD44780_SetCursor(13, 2);
+		HD44780_PrintStr(" ");
+		HD44780_PrintStr(buffer_Str);
+
+        // Se a temperatura real chegou ao setpoint, exibe o pop-up desejado
+        if(temp == setpoint && !pop_up_showed){
+            HD44780_Clear();
+            flag_pop_up = 1;
+            strcpy(message_pop_up, "Temperatura pronta!");
+
+        }
+                
+		if(flag_timer_int){
+//		HD44780_SetCursor(5, 2);
+//		HD44780_PrintStr(buffer_Str);
+		flag_timer_int = 0;
+		}
 
     // Se a opção selecionada for "Volume"
 	} else if(cursor == 2){
-		HD44780_SetCursor(3, 1);
+		HD44780_SetCursor(0, 0);
 		HD44780_PrintStr("Volume");
 
     // Se a opção selecionada for "Conexão"
 	} else if(cursor == 3){
-		HD44780_SetCursor(4, 1);
+		HD44780_SetCursor(0, 0);
 		HD44780_PrintStr("Conexao");
 
     // Se a opção selecionada for "Configuração"
 	} else if(cursor == 4){
-		HD44780_SetCursor(4, 1);
+		HD44780_SetCursor(0, 0);
 		HD44780_PrintStr("Configuracao");
 
     // Se a opção selecionada for "Calibração"
 	} else if(cursor == 5){
-		HD44780_SetCursor(4, 1);
+		HD44780_SetCursor(0, 0);
 		HD44780_PrintStr("Calibracao");
 
 	}
 
+}
+
+void Menu_ShowPopup()
+{
+    char line[21];
+    char msg[19];
+    char middle[21];
+
+    // Desenha a borda superior na linha 0, coluna 0
+    sprintf(line, "|------------------|");
+    HD44780_SetCursor(0, 0);
+    HD44780_PrintStr(line);
+
+    // Prepara a mensagem com no máximo 18 caracteres
+    strncpy(msg, message_pop_up, 18);
+    msg[18] = '\0';
+
+    // Desenha a linha do meio com a mensagem (linha 1, coluna 0)
+    sprintf(middle, "|%-18s|", msg);
+    HD44780_SetCursor(0, 1);
+    HD44780_PrintStr(middle);
+
+    HD44780_SetCursor(0, 2);
+    HD44780_PrintStr("|");
+
+    HD44780_SetCursor(19, 2);
+    HD44780_PrintStr("|");
+
+    // Desenha a borda inferior (linha 2, coluna 0)
+    sprintf(line, "|------------------|");
+    HD44780_SetCursor(0, 3);
+    HD44780_PrintStr(line);
+    
+    if(count_pop_up < 200){
+    	count_pop_up++;
+    	HAL_Delay(1);
+    	//printf("CONTADOR= %d\n", count_pop_up);
+
+    } else {
+    	flag_pop_up = 0;
+    	count_pop_up = 0;
+    	pop_up_showed = 1;
+    	old_screen = !old_screen;
+    }
 }
 
 /* Função que gerencia a lógica geral da interface do menu */
