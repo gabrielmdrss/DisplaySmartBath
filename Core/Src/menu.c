@@ -1,5 +1,5 @@
 #include "menu.h"
-#include <stdio.h>
+#include <stdio.h> 
 #include "liquidcrystal_i2c.h"
 
 volatile uint16_t adc_Value = 0;		// Valor cru do adc_Value
