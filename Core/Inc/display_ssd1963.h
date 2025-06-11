@@ -106,12 +106,13 @@
 #define YELLOW   			0xFFE0
 #define	RED	  				0XF800
 #define	GREEN	  			0X07E0
-#define	BLUE      		0X001F
-#define BLACK     		0X0000
-#define WHITE     		0XFFFF
-#define DARK_BLUE 		0X0007
-#define CYAN			0X0FFF
-#define VIVID_BLUE   0x041F
+#define	BLUE      			0X001F
+#define BLACK     			0X0000
+#define WHITE     			0XFFFF
+#define DARK_BLUE 			0X0007
+#define CYAN				0X0FFF
+#define VIVID_BLUE   		0x041F
+#define GRAYISH_BLUE  		0x7DFF
 
 
 typedef struct { // Data stored PER GLYPH
@@ -174,6 +175,8 @@ void LCD_Font(uint16_t x, uint16_t y, char *text, const GFXfont *p_font, uint8_t
 void LCD_Font_BG(uint16_t x, uint16_t y, char *text,
                  const GFXfont *font, uint8_t size,
                  uint32_t fg_color, uint32_t bg_color);
+
+void TFT_Draw_Bitmap(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *bmp, uint32_t color24);
 //=============================================================================
 // SSD1963 commands
 //=============================================================================

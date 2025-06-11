@@ -766,3 +766,19 @@ void LCD_Font_BG(uint16_t x, uint16_t y, char *text,
         cursor_x += glyph.xAdvance * size;
     }
 }
+
+void TFT_Draw_Bitmap(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *bmp, uint32_t color24)
+{
+	for (uint16_t row = 0; row < h; row++)
+		{
+			for (uint16_t col = 0; col < w; col++)
+			{
+				uint16_t c = bmp[row * w + col];
+				if (c != 0x0000)
+				{
+					// Lcd_SetPixel faz: SetArea(x,x,y,y); Cmd(0x2C); Write_Data(color);
+					Lcd_SetPixel(x + col, y + row, color24);
+				}
+			}
+		}
+}

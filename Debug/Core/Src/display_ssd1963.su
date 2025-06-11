@@ -34,3 +34,4 @@
 ../Core/Src/display_ssd1963.c:662:13:LCD_Char	56	static
 ../Core/Src/display_ssd1963.c:696:6:LCD_Font	72	static
 ../Core/Src/display_ssd1963.c:720:6:LCD_Font_BG	88	static
+../Core/Src/display_ssd1963.c:770:6:TFT_Draw_Bitmap	32	static

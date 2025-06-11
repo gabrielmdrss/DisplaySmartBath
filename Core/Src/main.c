@@ -57,17 +57,6 @@ SRAM_HandleTypeDef hsram1;
 
 /* USER CODE BEGIN PV */
 
-uint16_t temp = 36;
-
-char buffer[36];
-
-int16_t contador_Desligar = 0;
-int16_t contador_Iniciar = 0;
-int16_t flag_iniciar_banho = 0;
-int16_t flag_estado_banho = 0;
-int16_t flag_desligar_banho = 0;
-int16_t flag_resistencia_ativa = 0;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -124,7 +113,6 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim7);
   HAL_TIM_Base_Start_IT(&htim9);
   TFT_Clear_Screen(WHITE);
-  starter_Screen();
 
   /* USER CODE END 2 */
 
@@ -136,32 +124,21 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+/************************************   MENU PRINCIPAL  *********************************************/
 	  if(current_screen == 0){
 
 		if (current_screen != ultimo_estado_menu)
 		{
 			TFT_Draw_Fill_Rectangle(0, 81, 800, 317, VIVID_BLUE);
+			starter_Screen();
 			home_screen();
-			header();
-			fotter();
 			flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
 		}
 
-		atualiza_Cursor();
-
 		if (flag_botao_on){
+			flag_escrita_tela = 1;
 			current_screen = 1;
 			flag_botao_on = 0;
-
-//			if(item_selected == 0)
-//			{
-//				sprintf(buffer, "%d", temp);
-//				LCD_Font(70, 300, buffer,_Open_Sans_Bold_72, 2, BLACK);
-//				LCD_Font(250, 225, "C",_Open_Sans_Bold_48, 1, BLACK);
-//				TFT_Draw_Circle(245, 185, 4, 0, 1, BLACK);
-//				TFT_Draw_Fill_Triangle_Simple(255, 240, 30, 30, 1, BLACK);
-//				TFT_Draw_Fill_Triangle_Inverted_Simple(255, 280, 30, 30, 1, BLACK);
-//			}
 		}
 
 
@@ -183,65 +160,82 @@ int main(void)
 				item_selected = NUM_ITEMS - 1;
 		}
 
+		atualiza_Cursor();
 	  }
+
+/************************************   TELA ESPECÍFICA  *********************************************/
 	  else
 	  {
 			if (current_screen != ultimo_estado_menu)
 			{
 				TFT_Draw_Fill_Rectangle(0, 81, 800, 317, VIVID_BLUE);
+				starter_Screen();
 				ultimo_estado_menu = current_screen;
-				header();
-				fotter();
 				flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
 			}
 
 			/********************* BANHO *************************/
 			if(item_selected == 0)
 			{
-//				LCD_Font(40, 120, "Ajuste a temperatura do banho:",_Open_Sans_Bold_28, 1, BLACK);
-//				TFT_Draw_Rectangle(55, 160, 250, 160, 4, CYAN);
-//
-//				if(flag_estado_banho)
-//				{
-//					if(!flag_resistencia_ativa && !flag_desligar_banho)
-//					{
-//						flag_resistencia_ativa = 1;
-//						LCD_Font(600, 200, "Aquecendo", _Open_Sans_Bold_24, 1, RED);
-//						TFT_Draw_Circle(580, 192, 13, 1, 1, RED);
-//					}
-//					else
-//					{
-//						if (flag_botao_off)
-//						{
-//							flag_resistencia_ativa = 0;
-//							flag_desligar_banho = 1;
-//							flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
-//							LCD_Font(600, 200, "Aquecendo", _Open_Sans_Bold_24, 1, WHITE);
-//							TFT_Draw_Circle(580, 192, 13, 1, 1, WHITE);
-//						}
-//					}
-//
-//
-//				}
-//				else
-//				{
-//					if(flag_botao_on && !flag_estado_banho)
-//					{
-//						flag_botao_on = 0;
-//						flag_iniciar_banho = 1;
-//						LCD_Font(600, 250, "Recirculando", _Open_Sans_Bold_24, 1, RED);
-//						TFT_Draw_Circle(580, 242, 13, 1, 1, RED);
-////						TFT_Draw_Rectangle(597, 97, 186, 54, 2, BLACK);
-//					}
-//
-//
-//				}
-
-				if (flag_botao_off)
+				if(flag_estado_banho)
 				{
-					flag_botao_off = 0;
-					flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
-					current_screen = 0;
+					if(!flag_desligar_banho)
+					{
+						if(flag_resistencia_ativa)
+						{
+							flag_resistencia_ativa = flag_resistencia_ativa;
+						}
+						else if(!flag_resistencia_ativa && !flag_iniciar_banho)
+						{
+							LCD_Font(685, 310, "36", _Open_Sans_Bold_24, 1, WHITE);
+							TFT_Draw_Circle(750, 300, 10, 1, 1, WHITE);
+							flag_resistencia_ativa = 1;
+						}
+
+						if(flag_botao_on)
+						{
+							TFT_Draw_Fill_Rectangle(0, 81, 800, 317, VIVID_BLUE);
+							LCD_Font(150, 185, "Finalizando...", _Free_Serif_12, 1, WHITE);
+							TFT_Draw_Fill_Round_Rect(150, 200, 500, 30, 10, GRAYISH_BLUE);
+							flag_desligar_banho = 1;
+							flag_resistencia_ativa = 0;
+							flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
+							flag_iniciar_banho = 0;
+							contador_Iniciar = 0;
+
+							flag_escrita_tela = 1;
+						}
+					}
+					else
+					{
+						if(ultimo_contador_Desligar != contador_Desligar && (contador_Desligar % 5 == 0))
+						{
+							ultimo_contador_Desligar = contador_Desligar;
+							uint16_t w = (500 * contador_Desligar) / COUNT_LIM;
+							TFT_Draw_Fill_Round_Rect(150, 200, w, 30, 10, WHITE);
+						}
+					}
+				}
+				else
+				{
+					if (flag_botao_off)
+					{
+						flag_escrita_tela = 1;
+						flag_botao_off = 0;
+						flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
+						current_screen = 0;
+					}
+
+					if(flag_botao_on && !flag_estado_banho && !flag_desligar_banho)
+					{
+						flag_botao_on = 0;
+						flag_escrita_tela = 1;
+						flag_iniciar_banho = 1;
+						flag_estado_banho = 1;
+						TFT_Draw_Bitmap(690, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, WHITE);
+						TFT_Draw_Circle(750, 350, 10, 1, 1, WHITE);
+
+					}
 				}
 
 				if(flag_botao_up)
@@ -251,9 +245,12 @@ int main(void)
 
 					if(temp > 42) temp = 42;
 
-					TFT_Draw_Fill_Rectangle(70, 195, 180, 120, WHITE);
-					sprintf(buffer, "%d", temp);
-					LCD_Font(70, 300, buffer,_Open_Sans_Bold_72, 2, BLACK);
+					else
+					{
+						TFT_Draw_Fill_Rectangle(120, 185, 150, 100, VIVID_BLUE);
+						sprintf(buffer, "%d", temp);
+						LCD_Font(120, 280, buffer,_Open_Sans_Bold_128, 1, WHITE);
+					}
 				}
 
 				if(flag_botao_down)
@@ -263,40 +260,55 @@ int main(void)
 
 					if(temp < 36) temp = 36;
 
-					TFT_Draw_Fill_Rectangle(70, 195, 180, 120, WHITE);
-					sprintf(buffer, "%d", temp);
-					LCD_Font(70, 300, buffer,_Open_Sans_Bold_72, 2, BLACK);
+					else
+					{
+						TFT_Draw_Fill_Rectangle(120, 185, 150, 100, VIVID_BLUE);
+						sprintf(buffer, "%d", temp);
+						LCD_Font(120, 280, buffer,_Open_Sans_Bold_128, 1, WHITE);
+					}
 				}
 
 			}
+
+			/********************* ABASTECIMENTO *************************/
 			else if(item_selected == 1)
 			{
 				if (flag_botao_off)
 				{
+					flag_escrita_tela = 1;
 					flag_botao_off = 0;
 					flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
 					current_screen = 0;
 				}
 			}
+
+			/********************* DRENAGEM *************************/
 			else if(item_selected == 2)
 			{
 				if (flag_botao_off)
 				{
+					flag_escrita_tela = 1;
 					flag_botao_off = 0;
 					flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
 					current_screen = 0;
 				}
 			}
+
+			/********************* CONFIGURAÇÃO *************************/
 			else if(item_selected == 3)
 			{
 				if (flag_botao_off)
 				{
+					flag_escrita_tela = 1;
 					flag_botao_off = 0;
 					flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
 					current_screen = 0;
 				}
 			}
+
 	  }
+
+		header_fotter();
 
   }
   /* USER CODE END 3 */
@@ -585,16 +597,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			if(contador_Iniciar >= COUNT_LIM)
 			{
 				contador_Iniciar = 0;
-				flag_estado_banho = 1;
 				flag_iniciar_banho = 0;
-//				TFT_Draw_Fill_Rectangle(597, 97, 186, 54, WHITE);
+				flag_escrita_tela = 1;
 			}
 			else
 			{
 				contador_Iniciar++;
-//				uint16_t w = (180 * contador_Iniciar) / COUNT_LIM;
-//				TFT_Draw_Fill_Rectangle(600, 100, w, 50, BLACK);
 			}
+
 		}
 
 		if(flag_desligar_banho)
@@ -603,9 +613,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			{
 				flag_estado_banho = 0;
 				contador_Desligar = 0;
+				ultimo_contador_Desligar = 0;
 				flag_desligar_banho = 0;
-				LCD_Font(600, 250, "Recirculando", _Open_Sans_Bold_24, 1, WHITE);
-				TFT_Draw_Circle(580, 242, 13, 1, 1, WHITE);
+				TFT_Draw_Fill_Rectangle(0, 81, 800, 317, VIVID_BLUE);
+				starter_Screen();
+				flag_escrita_tela = 1;
 			}
 			else contador_Desligar++;
 		}

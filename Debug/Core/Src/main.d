@@ -39,7 +39,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../fonts/036_Open_Sans_Bold.h ../fonts/048_Open_Sans_Bold.h \
  ../fonts/072_Open_Sans_Bold.h ../fonts/096_Open_Sans_Bold.h \
  ../fonts/112_Open_Sans_Bold.h ../fonts/128_Open_Sans_Bold.h \
- ../fonts/FreeSerif18pt7b.h
+ ../fonts/FreeSerif12pt7b.h ../Core/Src/png.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -91,4 +91,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../fonts/096_Open_Sans_Bold.h:
 ../fonts/112_Open_Sans_Bold.h:
 ../fonts/128_Open_Sans_Bold.h:
-../fonts/FreeSerif18pt7b.h:
+../fonts/FreeSerif12pt7b.h:
+../Core/Src/png.h:
