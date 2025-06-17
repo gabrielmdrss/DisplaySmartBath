@@ -86,7 +86,7 @@ volatile uint8_t flag_botao_on = 0; 			// Flag para indicar que o botão ON foi 
 
 volatile uint8_t flag_escrita_tela = 1;
 
-float volume_ficticio = 20.0f;
+float volume_ficticio = 4.0f;
 uint16_t temp = 36;
 char buffer[36];
 
@@ -123,17 +123,46 @@ void starter_Screen (void)
 	{
 		if(item_selected == 0)
 		{
+			// Printar SetPoint grande na tela
 			sprintf(buffer, "%d", temp);
-			LCD_Font(120, 280, buffer,_Open_Sans_Bold_128, 1, WHITE);
-			LCD_Font(280, 225, "C",_Open_Sans_Bold_48, 1, WHITE);
-			TFT_Draw_Circle(275, 185, 4, 0, 1, WHITE);
+			LCD_Font(160, 280, buffer,_Open_Sans_Bold_128, 1, WHITE);
+			LCD_Font(320, 225, "C",_Open_Sans_Bold_48, 1, WHITE);
+			TFT_Draw_Circle(315, 185, 4, 0, 1, WHITE);
 
-			TFT_Draw_Bitmap(690, 237, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, GRAYISH_BLUE);
-			TFT_Draw_Circle(750, 250, 10, 1, 1, GRAYISH_BLUE);
-			LCD_Font(685, 310, "36", _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
-			TFT_Draw_Circle(750, 300, 10, 1, 1, GRAYISH_BLUE);
-			TFT_Draw_Bitmap(690, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, GRAYISH_BLUE);
-			TFT_Draw_Circle(750, 350, 10, 1, 1, GRAYISH_BLUE);
+			// Printar toda a parte de volume na tela
+			LCD_Font(705, 90, "Volume",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+			LCD_Font(660, 115, "Reservatorio",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+			sprintf(buffer, "%.1f", volume_ficticio);
+			LCD_Font(600, 155, buffer,_Open_Sans_Bold_28, 1, WHITE);
+			LCD_Font(670, 155, "| 20.0",_Open_Sans_Bold_28, 1, GRAYISH_BLUE);
+			LCD_Font(760, 155, "L",_Open_Sans_Bold_16, 1, WHITE);
+
+			if(volume_ficticio >= 10.0f)
+			{
+				TFT_Draw_Fill_Round_Rect(620, 175, 150, 25, 5, GREEN);
+				LCD_Font(658, 191, "nivel bom",_Open_Sans_Bold_14, 1, VIVID_BLUE);
+			}
+			else if(volume_ficticio > 5.0f && volume_ficticio < 10.0f)
+			{
+				TFT_Draw_Fill_Round_Rect(620, 175, 150, 25, 5, YELLOW);
+				LCD_Font(655, 191, "nivel baixo",_Open_Sans_Bold_14, 1, VIVID_BLUE);
+			}
+			else
+			{
+				TFT_Draw_Fill_Round_Rect(620, 175, 150, 25, 5, RED);
+				LCD_Font(630, 191, "nivel insuficiente",_Open_Sans_Bold_14, 1, VIVID_BLUE);
+			}
+
+			// Printar todos os 3 ícones apagados no início da tela
+			TFT_Draw_Bitmap(610, 237, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, GRAYISH_BLUE);
+			LCD_Font(650, 257, "Banho Pronto",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+			sprintf(buffer, "%d|25", temp);
+			LCD_Font(540, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
+			LCD_Font(620, 307, "c", _Open_Sans_Bold_18, 1, GRAYISH_BLUE);
+			TFT_Draw_Circle(618, 293, 2, 0, 1, GRAYISH_BLUE);
+			LCD_Font(650, 307, "Aquecendo",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+			TFT_Draw_Bitmap(610, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, GRAYISH_BLUE);
+			LCD_Font(650, 357, "Recirculando",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
 		}
 	}
 }
