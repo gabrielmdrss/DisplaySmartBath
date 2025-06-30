@@ -68,6 +68,8 @@ int16_t flag_estado_banho = 0;
 int16_t flag_desligar_banho = 0;
 int16_t flag_resistencia_ativa = 0;
 
+int16_t flag_estado_abastecimento = 0;
+
 static const int8_t mask_keyboard[4][4] =
 {
 		{ 1, 2, 3, 10 },
@@ -86,7 +88,7 @@ volatile uint8_t flag_botao_on = 0; 			// Flag para indicar que o botão ON foi 
 
 volatile uint8_t flag_escrita_tela = 1;
 
-float volume_ficticio = 4.0f;
+float volume_ficticio = 18.0f;
 uint16_t temp = 36;
 char buffer[36];
 
@@ -154,15 +156,23 @@ void starter_Screen (void)
 			}
 
 			// Printar todos os 3 ícones apagados no início da tela
-			TFT_Draw_Bitmap(610, 237, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, GRAYISH_BLUE);
-			LCD_Font(650, 257, "Banho Pronto",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+			TFT_Draw_Bitmap(595, 237, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, GRAYISH_BLUE);
+			LCD_Font(635, 257, "Banho Pronto",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
 			sprintf(buffer, "%d|25", temp);
-			LCD_Font(540, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
-			LCD_Font(620, 307, "c", _Open_Sans_Bold_18, 1, GRAYISH_BLUE);
-			TFT_Draw_Circle(618, 293, 2, 0, 1, GRAYISH_BLUE);
-			LCD_Font(650, 307, "Aquecendo",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
-			TFT_Draw_Bitmap(610, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, GRAYISH_BLUE);
-			LCD_Font(650, 357, "Recirculando",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+			LCD_Font(551, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
+			LCD_Font(631, 307, "c", _Open_Sans_Bold_18, 1, GRAYISH_BLUE);
+			TFT_Draw_Circle(629, 293, 2, 0, 1, GRAYISH_BLUE);
+			LCD_Font(661, 307, "Aquecendo",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+			TFT_Draw_Bitmap(603, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, GRAYISH_BLUE);
+			LCD_Font(643, 357, "Recirculando",_Open_Sans_Bold_16, 1, GRAYISH_BLUE);
+		}
+		else if(item_selected == 1)
+		{
+			sprintf(buffer, "%.1f", volume_ficticio);
+			LCD_Font(100, 280, buffer, _Open_Sans_Bold_128, 1, WHITE);
+			TFT_Draw_VLine(400, 180, 110, 2, WHITE);
+			LCD_Font(440, 280, "20.0", _Open_Sans_Bold_128, 1, GRAYISH_BLUE);
+
 		}
 	}
 }

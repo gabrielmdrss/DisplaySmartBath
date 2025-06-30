@@ -188,10 +188,10 @@ int main(void)
 						else if(!flag_resistencia_ativa && !flag_iniciar_banho)
 						{
 							sprintf(buffer, "%d|25", temp);
-							LCD_Font(540, 310, buffer, _Open_Sans_Bold_24, 1, WHITE);
-							LCD_Font(620, 307, "c", _Open_Sans_Bold_18, 1, WHITE);
-							TFT_Draw_Circle(618, 293, 2, 0, 1, WHITE);
-							LCD_Font(650, 307, "Aquecendo",_Open_Sans_Bold_16, 1, WHITE);
+							LCD_Font(551, 310, buffer, _Open_Sans_Bold_24, 1, WHITE);
+							LCD_Font(631, 307, "c", _Open_Sans_Bold_18, 1, WHITE);
+							TFT_Draw_Circle(629, 293, 2, 0, 1, WHITE);
+							LCD_Font(661, 307, "Aquecendo",_Open_Sans_Bold_16, 1, WHITE);
 							flag_resistencia_ativa = 1;
 						}
 
@@ -235,8 +235,8 @@ int main(void)
 						flag_escrita_tela = 1;
 						flag_iniciar_banho = 1;
 						flag_estado_banho = 1;
-						TFT_Draw_Bitmap(610, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, WHITE);
-						LCD_Font(650, 357, "Recirculando",_Open_Sans_Bold_16, 1, WHITE);
+						TFT_Draw_Bitmap(603, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, WHITE);
+						LCD_Font(643, 357, "Recirculando",_Open_Sans_Bold_16, 1, WHITE);
 
 					}
 				}
@@ -254,11 +254,11 @@ int main(void)
 						sprintf(buffer, "%d", temp);
 						LCD_Font(160, 280, buffer,_Open_Sans_Bold_128, 1, WHITE);
 
-						TFT_Draw_Fill_Rectangle(535, 290, 35, 30, VIVID_BLUE);
+						TFT_Draw_Fill_Rectangle(546, 290, 35, 30, VIVID_BLUE);
 						sprintf(buffer, "%d", temp);
 
-						if(flag_resistencia_ativa) LCD_Font(540, 310, buffer, _Open_Sans_Bold_24, 1, WHITE);
-						else LCD_Font(540, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
+						if(flag_resistencia_ativa) LCD_Font(551, 310, buffer, _Open_Sans_Bold_24, 1, WHITE);
+						else LCD_Font(551, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
 					}
 				}
 
@@ -275,11 +275,11 @@ int main(void)
 						sprintf(buffer, "%d", temp);
 						LCD_Font(160, 280, buffer,_Open_Sans_Bold_128, 1, WHITE);
 
-						TFT_Draw_Fill_Rectangle(535, 290, 35, 30, VIVID_BLUE);
+						TFT_Draw_Fill_Rectangle(546, 290, 35, 30, VIVID_BLUE);
 						sprintf(buffer, "%d", temp);
 
-						if(flag_resistencia_ativa) LCD_Font(540, 310, buffer, _Open_Sans_Bold_24, 1, WHITE);
-						else LCD_Font(540, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
+						if(flag_resistencia_ativa) LCD_Font(551, 310, buffer, _Open_Sans_Bold_24, 1, WHITE);
+						else LCD_Font(551, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
 					}
 				}
 			}
@@ -287,13 +287,29 @@ int main(void)
 			/********************* ABASTECIMENTO *************************/
 			else if(item_selected == 1)
 			{
-				if (flag_botao_off)
+				if(flag_estado_abastecimento)
 				{
-					flag_escrita_tela = 1;
-					flag_botao_off = 0;
-					flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
-					current_screen = 0;
+
 				}
+				else
+				{
+					if (flag_botao_off)
+					{
+						flag_escrita_tela = 1;
+						flag_botao_off = 0;
+						flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
+						current_screen = 0;
+					}
+
+					if(flag_botao_on)
+					{
+						flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
+						flag_estado_abastecimento = 1;
+						TFT_Draw_Fill_Round_Rect(200, 300, 150, 25, 5, GREEN);
+						LCD_Font(233, 316, "Abastecendo", _Open_Sans_Bold_14, 1, VIVID_BLUE);
+					}
+				}
+
 			}
 
 			/********************* DRENAGEM *************************/
