@@ -48,6 +48,8 @@ uint8_t flag_botao_k1 = 0;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim9;
 
@@ -66,6 +68,7 @@ static void MX_FSMC_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM9_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -108,12 +111,12 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM7_Init();
   MX_TIM9_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   Init_SSD1963();
   HAL_TIM_Base_Start_IT(&htim7);
   HAL_TIM_Base_Start_IT(&htim9);
-  TFT_Clear_Screen(WHITE);
-
+  TFT_Clear_Screen(VIVID_BLUE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -127,39 +130,46 @@ int main(void)
 /************************************   MENU PRINCIPAL  *********************************************/
 	  if(current_screen == 0){
 
+
+		// Verifica se houve uma troca de telas, para imprimir apenas uma vez os elementos
 		if (current_screen != ultimo_estado_menu)
 		{
-			TFT_Draw_Fill_Rectangle(0, 81, 800, 317, VIVID_BLUE);
-			starter_Screen();
-			home_screen();
-			flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
+			TFT_Draw_Fill_Rectangle(0, 75, 800, 323, VIVID_BLUE);	// Limpa a tela
+			starter_Screen();	// Imprime o esqueleto do menu
+			home_screen();		// Printa os rótulos das opções e elementos individuais
+			zeraBotoes();		// Zera os botões
 		}
 
+		// Verifica se alguém clicou no botão de troca de tela
 		if (flag_botao_on){
-			flag_escrita_tela = 1;
-			current_screen = 1;
-			flag_botao_on = 0;
+			flag_escrita_tela = 1;	// Seta a flag de atualizar o rodapé e cabeçalho
+			current_screen = 1;		// Muda o valor da tela atual
+			zeraBotoes();			// Zera o valor da flag
 		}
 
-
+		// Verifica se alguém clicou no item onde descerá pelas opções da interface
 		if (flag_botao_down)
 		{
-			flag_botao_down = 0;
-			item_selected++;
+			zeraBotoes();		// Zera a flag dos botões
+			item_selected++;	// Incrementa o item selecionado
 
+			// Verifica se chegou no limite da lista e rezeta
 			if (item_selected >= NUM_ITEMS)
 				item_selected = 0;
 		}
 
+		// Verifica se alguém clicou no item onde subirá pelas opções da interface
 		if(flag_botao_up)
 		{
-			flag_botao_up = 0;
-			item_selected--;
+			zeraBotoes();		// Zera a flag dos botões
+			item_selected--;	// Decrementa o item selecionado
 
+			// Verifica se chegou no limite superior da lista e rezeta
 			if (item_selected < 0)
 				item_selected = NUM_ITEMS - 1;
 		}
 
+		// Função responsável por atualizar o cursor quando houver uma mudança no item selecionado
 		atualiza_Cursor();
 	  }
 
@@ -168,7 +178,7 @@ int main(void)
 	  {
 			if (current_screen != ultimo_estado_menu)
 			{
-				TFT_Draw_Fill_Rectangle(0, 81, 800, 317, VIVID_BLUE);
+				TFT_Draw_Fill_Rectangle(0, 75, 800, 323, VIVID_BLUE);
 				starter_Screen();
 				ultimo_estado_menu = current_screen;
 				flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
@@ -195,14 +205,14 @@ int main(void)
 							flag_resistencia_ativa = 1;
 						}
 
-						if(flag_botao_on)
+						if(flag_botao_on || volume_ficticio <= 1.0f)
 						{
-							TFT_Draw_Fill_Rectangle(0, 81, 800, 317, VIVID_BLUE);
-							LCD_Font(150, 185, "Finalizando...", _Free_Serif_12, 1, WHITE);
+							TFT_Draw_Fill_Rectangle(0, 75, 800, 323, VIVID_BLUE);
+							LCD_Font(150, 185, "Finalizando...", _Open_Sans_Bold_20, 1, WHITE);
 							TFT_Draw_Fill_Round_Rect(150, 200, 500, 30, 10, GRAYISH_BLUE);
 							flag_desligar_banho = 1;
 							flag_resistencia_ativa = 0;
-							flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
+							zeraBotoes();
 							flag_iniciar_banho = 0;
 							contador_Iniciar = 0;
 
@@ -224,26 +234,49 @@ int main(void)
 					if (flag_botao_off)
 					{
 						flag_escrita_tela = 1;
-						flag_botao_off = 0;
+						zeraBotoes();
 						flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
 						current_screen = 0;
 					}
 
 					if(flag_botao_on && !flag_estado_banho && !flag_desligar_banho)
 					{
-						flag_botao_on = 0;
-						flag_escrita_tela = 1;
-						flag_iniciar_banho = 1;
-						flag_estado_banho = 1;
-						TFT_Draw_Bitmap(603, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, WHITE);
-						LCD_Font(643, 357, "Recirculando",_Open_Sans_Bold_16, 1, WHITE);
+						zeraBotoes();
+						if(volume_ficticio >= 5.0f)
+						{
+							flag_escrita_tela = 1;
+							flag_iniciar_banho = 1;
+							flag_estado_banho = 1;
+							TFT_Draw_Bitmap(603, 337, RECIRCULACAO_WIDTH, RECIRCULACAO_HEIGHT, recirculacao_bitmap, WHITE);
+							LCD_Font(643, 357, "Recirculando",_Open_Sans_Bold_16, 1, WHITE);
+						}
 
 					}
 				}
 
+				if(volume_ficticio >= 10.0f && ultimo_volume_ficticio < 10.0f)
+				{
+					TFT_Draw_Fill_Round_Rect(620, 175, 150, 25, 5, GREEN);
+					LCD_Font(658, 191, "nivel bom",_Open_Sans_Bold_14, 1, VIVID_BLUE);
+					ultimo_volume_ficticio = volume_ficticio;
+				}
+				else if(volume_ficticio > 5.0f && volume_ficticio < 10.0f &&
+						(ultimo_volume_ficticio <= 5.0f || ultimo_volume_ficticio >= 10.0f))
+				{
+					TFT_Draw_Fill_Round_Rect(620, 175, 150, 25, 5, YELLOW);
+					LCD_Font(655, 191, "nivel baixo",_Open_Sans_Bold_14, 1, VIVID_BLUE);
+					ultimo_volume_ficticio = volume_ficticio;
+				}
+				else if(volume_ficticio <= 5.0f && ultimo_volume_ficticio > 5.0f)
+				{
+					TFT_Draw_Fill_Round_Rect(620, 175, 150, 25, 5, RED);
+					LCD_Font(630, 191, "nivel insuficiente",_Open_Sans_Bold_14, 1, VIVID_BLUE);
+					ultimo_volume_ficticio = volume_ficticio;
+				}
+
 				if(flag_botao_up)
 				{
-					flag_botao_up = 0;
+					zeraBotoes();
 					temp++;
 
 					if(temp > 42) temp = 42;
@@ -264,7 +297,7 @@ int main(void)
 
 				if(flag_botao_down)
 				{
-					flag_botao_down = 0;
+					zeraBotoes();
 					temp--;
 
 					if(temp < 36) temp = 36;
@@ -282,45 +315,165 @@ int main(void)
 						else LCD_Font(551, 310, buffer, _Open_Sans_Bold_24, 1, GRAYISH_BLUE);
 					}
 				}
+
+				if(flag_atualizar_tela && !flag_desligar_banho)
+				{
+					TFT_Draw_Fill_Rectangle(595, 130, 65, 28, VIVID_BLUE);
+					sprintf(buffer, "%.1f", volume_ficticio);
+					LCD_Font(600, 155, buffer,_Open_Sans_Bold_28, 1, WHITE);
+					flag_atualizar_tela = 0;
+				}
 			}
 
 			/********************* ABASTECIMENTO *************************/
 			else if(item_selected == 1)
 			{
-				if(flag_estado_abastecimento)
+				if(volume_ficticio >= 19.5f)
 				{
+					if(flag_estado_abastecimento) flag_estado_abastecimento = 0;
 
+					if(!flag_volume)
+					{
+						TFT_Draw_Bitmap(105, 308, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, GREEN);
+						TFT_Draw_Fill_Round_Rect(145, 310, 125, 25, 5, GREEN);
+						LCD_Font(163, 326, "Abastecido", _Open_Sans_Bold_14, 1, VIVID_BLUE);
+						flag_escrita_tela = 1;
+						flag_volume = 1;
+					}
+					else
+					{
+						if (flag_botao_off)
+						{
+							flag_escrita_tela = 1;
+							flag_volume = 0;
+							zeraBotoes();
+							current_screen = 0;
+						}
+					}
 				}
 				else
 				{
-					if (flag_botao_off)
+					if(flag_volume)
 					{
+						flag_volume = 0;
 						flag_escrita_tela = 1;
-						flag_botao_off = 0;
-						flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
-						current_screen = 0;
+						TFT_Draw_Fill_Round_Rect(105, 305, 165, 30, 5, VIVID_BLUE);
 					}
 
-					if(flag_botao_on)
+					if(flag_estado_abastecimento)
 					{
-						flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
-						flag_estado_abastecimento = 1;
-						TFT_Draw_Fill_Round_Rect(200, 300, 150, 25, 5, GREEN);
-						LCD_Font(233, 316, "Abastecendo", _Open_Sans_Bold_14, 1, VIVID_BLUE);
+						if (flag_botao_on)
+						{
+							flag_escrita_tela = 1;
+							zeraBotoes();
+							flag_estado_abastecimento = 0;
+							TFT_Draw_Bitmap(105, 308, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, VIVID_BLUE);
+							TFT_Draw_Fill_Round_Rect(145, 310, 125, 25, 5, VIVID_BLUE);
+						}
+					}
+					else
+					{
+						if(flag_botao_on && volume_ficticio <= 19.5)
+						{
+							flag_escrita_tela = 1;
+							flag_estado_abastecimento = 1;
+							zeraBotoes();
+							TFT_Draw_Bitmap(105, 308, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, YELLOW);
+							TFT_Draw_Fill_Round_Rect(145, 310, 125, 25, 5, YELLOW);
+							LCD_Font(158, 326, "Abastecendo", _Open_Sans_Bold_14, 1, VIVID_BLUE);
+						}
+
+						if (flag_botao_off)
+						{
+							flag_escrita_tela = 1;
+							zeraBotoes();
+							current_screen = 0;
+						}
 					}
 				}
 
+				if(flag_atualizar_tela)
+				{
+					TFT_Draw_Fill_Rectangle(100, 180, 280, 105, VIVID_BLUE);
+					sprintf(buffer, "%.1f", volume_ficticio);
+					LCD_Font(100, 280, buffer, _Open_Sans_Bold_128, 1, WHITE);
+					flag_atualizar_tela = 0;
+				}
 			}
 
 			/********************* DRENAGEM *************************/
 			else if(item_selected == 2)
 			{
-				if (flag_botao_off)
+				if(volume_ficticio <= 0.5f)
 				{
-					flag_escrita_tela = 1;
-					flag_botao_off = 0;
-					flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
-					current_screen = 0;
+					if(flag_estado_drenagem) flag_estado_drenagem = 0;
+
+					if(!flag_volume)
+					{
+						TFT_Draw_Bitmap(105, 308, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, GREEN);
+						TFT_Draw_Fill_Round_Rect(145, 310, 125, 25, 5, GREEN);
+						LCD_Font(175, 326, "Drenado", _Open_Sans_Bold_14, 1, VIVID_BLUE);
+						flag_escrita_tela = 1;
+						flag_volume = 1;
+					}
+					else
+					{
+						if (flag_botao_off)
+						{
+							flag_escrita_tela = 1;
+							flag_volume = 0;
+							zeraBotoes();
+							current_screen = 0;
+						}
+					}
+				}
+				else
+				{
+					if(flag_volume)
+					{
+						flag_volume = 0;
+						flag_escrita_tela = 1;
+						TFT_Draw_Fill_Round_Rect(105, 305, 165, 30, 5, VIVID_BLUE);
+					}
+
+					if(flag_estado_drenagem)
+					{
+						if (flag_botao_on)
+						{
+							flag_escrita_tela = 1;
+							zeraBotoes();
+							flag_estado_drenagem = 0;
+							TFT_Draw_Bitmap(105, 308, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, VIVID_BLUE);
+							TFT_Draw_Fill_Round_Rect(145, 310, 125, 25, 5, VIVID_BLUE);
+						}
+					}
+					else
+					{
+						if(flag_botao_on && volume_ficticio >= 0.5f)
+						{
+							flag_escrita_tela = 1;
+							flag_estado_drenagem = 1;
+							zeraBotoes();
+							TFT_Draw_Bitmap(105, 308, BANHO_PRONTO_WIDTH, BANHO_PRONTO_HEIGHT, banho_pronto_bitmap, YELLOW);
+							TFT_Draw_Fill_Round_Rect(145, 310, 125, 25, 5, YELLOW);
+							LCD_Font(170, 326, "Drenando", _Open_Sans_Bold_14, 1, VIVID_BLUE);
+						}
+
+						if (flag_botao_off)
+						{
+							flag_escrita_tela = 1;
+							zeraBotoes();
+							current_screen = 0;
+						}
+					}
+				}
+
+				if(flag_atualizar_tela)
+				{
+					TFT_Draw_Fill_Rectangle(100, 180, 280, 105, VIVID_BLUE);
+					sprintf(buffer, "%.1f", volume_ficticio);
+					LCD_Font(100, 280, buffer, _Open_Sans_Bold_128, 1, WHITE);
+					flag_atualizar_tela = 0;
 				}
 			}
 
@@ -330,8 +483,7 @@ int main(void)
 				if (flag_botao_off)
 				{
 					flag_escrita_tela = 1;
-					flag_botao_off = 0;
-					flag_botao_on = flag_botao_off = flag_botao_up = flag_botao_down = 0;
+					zeraBotoes();
 					current_screen = 0;
 				}
 			}
@@ -388,6 +540,58 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -513,8 +717,8 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pins : PE2 PE3 PE4 PE5 */
   GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
@@ -622,6 +826,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	}
 	if(htim->Instance == TIM9)
 	{
+			if(contador_Printar_Numero < 5)	contador_Printar_Numero++;
+			else
+			{
+				flag_atualizar_tela = 1;
+				contador_Printar_Numero = 0;
+				HAL_ADC_Start(&hadc1);
+				uint16_t adc_value = HAL_ADC_GetValue(&hadc1);
+				volume_ficticio = (float)adc_value * 20.0f / 4095.0f;
+				HAL_ADC_Stop(&hadc1);
+			}
+
 		if(flag_iniciar_banho)
 		{
 			if(contador_Iniciar >= COUNT_LIM)

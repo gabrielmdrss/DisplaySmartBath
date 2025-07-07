@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 // Adress for data
-#define LCD_DATA 0x60020000
+//#define LCD_DATA 0x60020000
+#define LCD_DATA 0x60080000
 // Adress for command
 #define LCD_REG 0x60000000
 
@@ -111,7 +112,7 @@
 #define WHITE     			0XFFFF
 #define DARK_BLUE 			0X0007
 #define CYAN				0X0FFF
-#define VIVID_BLUE   		0x041F
+#define VIVID_BLUE   		0X001F
 #define GRAYISH_BLUE  		0x7DFF
 
 
